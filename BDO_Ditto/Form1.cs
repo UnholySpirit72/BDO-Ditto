@@ -1,5 +1,4 @@
-﻿using BDO_Ditto.BDO;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -10,14 +9,20 @@ namespace BDO_Ditto
 {
     public partial class MainForm : Form
     {
-        private BDO_AppearanceSwaper ApperanceSwaper = new BDO_AppearanceSwaper();
-        private Dictionary<string, BDO_DataBlock> SectionsToCopy = new Dictionary<string, BDO_DataBlock>();
+        private readonly BdoAppearanceSwaper _apperanceSwaper = new BdoAppearanceSwaper();
+        private readonly Dictionary<string, BdoDataBlock> _sectionsToCopy = new Dictionary<string, BdoDataBlock>();
 
         public MainForm()
         {
             InitializeComponent();
 
             Text = string.Format("Ditto (v{0})", Application.ProductVersion);
+        }
+
+        public sealed override string Text
+        {
+            get { return base.Text; }
+            set { base.Text = value; }
         }
 
         private string GetBDOCustomizationFolder()
@@ -32,24 +37,21 @@ namespace BDO_Ditto
 
         private string OpenCustomizationTemplateBrowser(string title)
         {
-            OpenFileDialog OpenDialog = new OpenFileDialog();
+            OpenFileDialog openDialog = new OpenFileDialog();
 
             string baseDir = GetBDOCustomizationFolder();
             if (Directory.Exists(baseDir))
             {
-                OpenDialog.InitialDirectory = GetBDOCustomizationFolder();
+                openDialog.InitialDirectory = GetBDOCustomizationFolder();
             }
 
-            OpenDialog.Title = title;
+            openDialog.Title = title;
 
-            if (OpenDialog.ShowDialog() == DialogResult.OK)
+            if (openDialog.ShowDialog() == DialogResult.OK)
             {
-                return OpenDialog.FileName;
+                return openDialog.FileName;
             }
-            else
-            {
-                return "";
-            }
+            return string.Empty;
         }
 
         private void Btt_SourceBrowse_Click(object sender, EventArgs e)
@@ -60,13 +62,13 @@ namespace BDO_Ditto
             {
                 Tb_SourcePath.Text = path;
 
-                if (ApperanceSwaper.LoadSource(path))
+                if (_apperanceSwaper.LoadSource(path))
                 {
-                    Gb_Source.Text = string.Format("Source Template ({0})", ApperanceSwaper.GetSourceClassStr());
+                    Gb_Source.Text = string.Format("Source Template ({0})", _apperanceSwaper.GetSourceClassStr());
                 }
             }
 
-            Btt_CopySections.Enabled = ApperanceSwaper.IsSourceAndTragetApperanceLoaded();
+            Btt_CopySections.Enabled = _apperanceSwaper.IsSourceAndTragetApperanceLoaded();
         }
 
         private void Btt_TargetBrowse_Click(object sender, EventArgs e)
@@ -77,26 +79,26 @@ namespace BDO_Ditto
             {
                 Tb_TargetPath.Text = path;
 
-                if (ApperanceSwaper.LoadTarget(path))
+                if (_apperanceSwaper.LoadTarget(path))
                 {
-                    Gb_Target.Text = string.Format("Target Template ({0})", ApperanceSwaper.GetTargetClassStr());
+                    Gb_Target.Text = string.Format("Target Template ({0})", _apperanceSwaper.GetTargetClassStr());
                 }
             }
 
-            Btt_CopySections.Enabled = ApperanceSwaper.IsSourceAndTragetApperanceLoaded();
+            Btt_CopySections.Enabled = _apperanceSwaper.IsSourceAndTragetApperanceLoaded();
         }
 
         // Open the help web page
         private void MainForm_HelpButtonClicked(object sender, CancelEventArgs e)
         {
-            System.Diagnostics.Process.Start("http://goomichan.github.io/BDO-Ditto/Index.html");
+            Process.Start("http://goomichan.github.io/BDO-Ditto/Index.html");
         }
 
         private void Btt_CopySections_Click(object sender, EventArgs e)
         {
-            List<BDO_DataBlock> setionsToCopy = new List<BDO_DataBlock>(SectionsToCopy.Values);
+            List<BdoDataBlock> setionsToCopy = new List<BdoDataBlock>(_sectionsToCopy.Values);
             PrintSectionsToCopy();
-            ApperanceSwaper.CopySectionsToTarget(setionsToCopy);
+            _apperanceSwaper.CopySectionsToTarget(setionsToCopy);
         }
 
         // Global handler for selecting what sections to copy
@@ -110,16 +112,16 @@ namespace BDO_Ditto
                     string sectionName = cb.Name.Substring(3);
                     //Debug.WriteLine(string.Format("Checkbox {0} set to {1}. section name: {2}", cb.Name, cb.Checked, sectionName));
 
-                    if (cb.Checked == false && SectionsToCopy.ContainsKey(sectionName))
+                    if (cb.Checked == false && _sectionsToCopy.ContainsKey(sectionName))
                     {
-                        SectionsToCopy.Remove(sectionName);
+                        _sectionsToCopy.Remove(sectionName);
                         Debug.WriteLine(string.Format("Removed section {0} from copy list", sectionName));
                     }
-                    else if (cb.Checked && !SectionsToCopy.ContainsKey(sectionName))
+                    else if (cb.Checked && !_sectionsToCopy.ContainsKey(sectionName))
                     {
                         if (StaticData.ApperanceSections.ContainsKey(sectionName))
                         {
-                            SectionsToCopy.Add(sectionName, StaticData.ApperanceSections[sectionName]);
+                            _sectionsToCopy.Add(sectionName, StaticData.ApperanceSections[sectionName]);
                             Debug.WriteLine(string.Format("Added section {0} to copy list", sectionName));
                         }
                         else
@@ -138,13 +140,13 @@ namespace BDO_Ditto
         [Conditional("DEBUG")]
         private void PrintSectionsToCopy()
         {
-            Debug.WriteLine(string.Format("Copying {0} sections: ", SectionsToCopy.Count));
+            Debug.WriteLine("Copying {0} sections: ", _sectionsToCopy.Count);
             Debug.WriteLine("-----------------------------------------------------------");
-            Debug.WriteLine(string.Format("{0,-20} {1,-10} {2,-10}", "Section Name", "Offset", "Length"));
+            Debug.WriteLine("{0,-20} {1,-10} {2,-10}", "Section Name", "Offset", "Length");
             Debug.WriteLine("-----------------------------------------------------------");
-            foreach (KeyValuePair<string, BDO_DataBlock> kvp in SectionsToCopy)
+            foreach (KeyValuePair<string, BdoDataBlock> kvp in _sectionsToCopy)
             {
-                Debug.WriteLine(string.Format("{0,-20} {1,-10} {2,-10}", kvp.Key, kvp.Value.Offset, kvp.Value.Length));
+                Debug.WriteLine("{0,-20} {1,-10} {2,-10}", kvp.Key, kvp.Value.Offset, kvp.Value.Length);
             }
             Debug.WriteLine("-----------------------------------------------------------");
         }

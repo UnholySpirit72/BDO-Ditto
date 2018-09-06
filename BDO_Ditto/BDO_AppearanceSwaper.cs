@@ -1,5 +1,4 @@
-﻿using BDO_Ditto.BDO;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -8,9 +7,9 @@ using System.Windows.Forms;
 namespace BDO_Ditto
 {
     // Defines blocks of apperance data to copy across
-    public struct BDO_DataBlock
+    public struct BdoDataBlock
     {
-        public BDO_DataBlock(int offset, int length)
+        public BdoDataBlock(int offset, int length)
         {
             Offset = offset;
             Length = length;
@@ -20,69 +19,63 @@ namespace BDO_Ditto
         public int Length;
     }
 
-    public class BDO_AppearanceSwaper
+    public class BdoAppearanceSwaper
     {
-        private string SourceApperancePath = null;
-        private string TargetApperancePath = null;
+        private string _sourceApperancePath;
+        private string _targetApperancePath;
 
-        private byte[] SourceApperanceData = null;
-        private byte[] TargetApperanceData = null;
+        private byte[] _sourceApperanceData;
+        private byte[] _targetApperanceData;
 
         public bool LoadSource(string path)
         {
-            SourceApperancePath = path;
-            byte[] data = LoadApperance(SourceApperancePath);
+            _sourceApperancePath = path;
+            byte[] data = LoadApperance(_sourceApperancePath);
             if (data != null)
             {
-                SourceApperanceData = data;
+                _sourceApperanceData = data;
                 return true;
             }
-            else
-            {
-                SourceApperanceData = null;
-                return false;
-            }
+            _sourceApperanceData = null;
+            return false;
         }
 
         public bool LoadTarget(string path)
         {
-            TargetApperancePath = path;
-            byte[] data = LoadApperance(TargetApperancePath);
+            _targetApperancePath = path;
+            byte[] data = LoadApperance(_targetApperancePath);
             if (data != null)
             {
-                TargetApperanceData = data;
+                _targetApperanceData = data;
                 return true;
             }
-            else
-            {
-                TargetApperanceData = null;
-                return false;
-            }
+            _targetApperanceData = null;
+            return false;
         }
 
-        public void CopySectionsToTarget(List<BDO_DataBlock> SetionsToCopy)
+        public void CopySectionsToTarget(List<BdoDataBlock> setionsToCopy)
         {
-            if (SourceApperanceData != null && TargetApperanceData != null)
+            if (_sourceApperanceData != null && _targetApperanceData != null)
             {
-                byte[] newTemplate = new byte[TargetApperanceData.Length];
-                TargetApperanceData.CopyTo(newTemplate, 0);
+                byte[] newTemplate = new byte[_targetApperanceData.Length];
+                _targetApperanceData.CopyTo(newTemplate, 0);
 
-                foreach (var section in SetionsToCopy)
+                foreach (var section in setionsToCopy)
                 {
-                    Array.Copy(SourceApperanceData, section.Offset, newTemplate, section.Offset, section.Length);
+                    Array.Copy(_sourceApperanceData, section.Offset, newTemplate, section.Offset, section.Length);
                 }
 
                 try {
-                    File.WriteAllBytes(TargetApperancePath, newTemplate);
+                    File.WriteAllBytes(_targetApperancePath, newTemplate);
                 }
                 catch (Exception e) {
-                    MessageBox.Show("Error saving customisation file, sorry :<\n " + e.ToString(), "Error Saving");
+                    MessageBox.Show(@"Error saving customisation file, sorry :<\n " + e, @"Error Saving");
                 }
 
-                var result = MessageBox.Show("Sections have been copied to target.   ᕕ( ՞ ᗜ ՞ )ᕗ\nCommit changes and reload?", "Done", MessageBoxButtons.YesNo);
+                var result = MessageBox.Show(@"Sections have been copied to target.   ᕕ( ՞ ᗜ ՞ )ᕗ\nCommit changes and reload?", @"Done", MessageBoxButtons.YesNo);
                 if (result == DialogResult.Yes)
                 {
-                    LoadTarget(TargetApperancePath);
+                    LoadTarget(_targetApperancePath);
                 }
             }
         }
@@ -100,53 +93,47 @@ namespace BDO_Ditto
                     {
                         return data;
                     }
-                    else
-                    {
-                        string suportedVersionStr = string.Join(", ", StaticData.SuportedVersions);
-                        MessageBox.Show(string.Format("Error loading Apperance data\nUnsuported version {0}, only versions {1} are supported, sorry :<\nTry loading it and resaving it in game.", version, suportedVersionStr), "Error");
-                        return null;
-                    }
+                    string suportedVersionStr = string.Join(", ", StaticData.SuportedVersions);
+                    MessageBox.Show(string.Format("Error loading Apperance data\nUnsuported version {0}, only versions {1} are supported, sorry :<\nTry loading it and resaving it in game.", version, suportedVersionStr), @"Error");
+                    return null;
                 }
                 catch (Exception e)
                 {
-                    MessageBox.Show("Error loading Apperance data\n" + e.ToString(), "Error");
+                    MessageBox.Show(@"Error loading Apperance data\n" + e, @"Error");
                     return null;
                 }
             }
-            else
-            {
-                MessageBox.Show("Apperance file does not exist.\n" + path, "Error");
-                return null;
-            }
+            MessageBox.Show(@"Apperance file does not exist.\n" + path, @"Error");
+            return null;
         }
 
         private string GetClassFromData(byte[] data)
         {
             // Crude
             ulong classId = BitConverter.ToUInt64(data, StaticData.ClassId.Offset);
-            string className = "";
-            if (!StaticData.ClassIdLookup.TryGetValue(classId, out className))
+            if (!StaticData.ClassIdLookup.TryGetValue(classId, out string className))
             {
                 className = "Unkown";
+                MessageBox.Show(string.Format("Class ID: {0}, Name: {1}", classId, className), @"Class Unknown", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
             }
-            Debug.WriteLine(string.Format("Class ID: {0}, Name: {1}", classId, className));
+            Debug.WriteLine("Class ID: {0}, Name: {1}", classId, className);
 
             return className;
         }
 
         public string GetSourceClassStr()
         {
-            return GetClassFromData(SourceApperanceData);
+            return GetClassFromData(_sourceApperanceData);
         }
 
         public string GetTargetClassStr()
         {
-            return GetClassFromData(TargetApperanceData);
+            return GetClassFromData(_targetApperanceData);
         }
 
         public bool IsSourceAndTragetApperanceLoaded()
         {
-            return SourceApperanceData != null && TargetApperanceData != null;
+            return _sourceApperanceData != null && _targetApperanceData != null;
         }
     }
 }
