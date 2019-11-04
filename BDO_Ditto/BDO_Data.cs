@@ -26,7 +26,8 @@ namespace BDO_Ditto
             { 1286660139353111900,      "Striker"       }, // 11DB229468CBFD5C      5C FD CB 68 94 22 DB 11
             { 13903222370355958151,     "Mystic"        }, // C0F22B155A54D187      87 D1 54 5A 15 2B F2 C0
             { 13298706715706332932,     "Lahn"          }, // B88E7F4C61C71704      04 17 C7 61 4C 7F 8E B8
-            { 9027954148991039522,      "Archer"        }  // 22F81F6377BC497D      7D 49 BC 77 63 1F F8 22
+            { 9027954148991039522,      "Archer"        }, // 22F81F6377BC497D      7D 49 BC 77 63 1F F8 22
+            { 1993106510572782253,      "Shai"          }  // 1BA8EFCFBA3582AD      AD 82 35 BA CF EF A8 1B
         };
         #endregion
 
