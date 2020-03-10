@@ -72,7 +72,7 @@ namespace BDO_Ditto
                     MessageBox.Show(@"Error saving customisation file, sorry :<\n " + e, @"Error Saving");
                 }
 
-                var result = MessageBox.Show(@"Sections have been copied to target.   ᕕ( ՞ ᗜ ՞ )ᕗ\nCommit changes and reload?", @"Done", MessageBoxButtons.YesNo);
+                var result = MessageBox.Show(@"DNA 복제가 완료되었습니다.  변경 사항을 커밋하고 다시로드 하시겠습니까?", @"Done", MessageBoxButtons.YesNo);
                 if (result == DialogResult.Yes)
                 {
                     LoadTarget(_targetApperancePath);
